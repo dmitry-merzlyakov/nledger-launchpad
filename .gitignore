@@ -3,3 +3,8 @@
 ################################################################################
 
 /.vs
+/src/.vs
+/src/NLedger.Launchpad/bin/
+/src/NLedger.Launchpad/obj/
+/src/NLedger.Launchpad.Tests/bin/
+/src/NLedger.Launchpad.Tests/obj/
