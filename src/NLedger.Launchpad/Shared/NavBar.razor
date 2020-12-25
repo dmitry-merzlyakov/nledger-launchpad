@@ -1,0 +1,13 @@
+﻿@inject Services.DialogService DialogService
+@inject Services.ModelService Model
+
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-secondary">
+    <button class="btn btn-outline-light shadow-none" type="button" id="btwWorkspaceToggle" @onclick="@(() => Model.Model.WorkspaceVisibleToggle())">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <h3 class="text-white pl-4">.Net Ledger Launchpad</h3>
+    <div class="ml-auto">
+        <button type="button" class="btn btn-outline-light" @onclick="@(() => DialogService.OpenDialog<Dialogs.DialogExamples>())">Examples</button>
+        <button type="button" class="btn btn-outline-light" @onclick="@(() => DialogService.OpenDialog<Dialogs.DialogAbout>())">About</button>
+    </div>
+</nav>

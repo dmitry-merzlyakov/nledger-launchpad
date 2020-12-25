@@ -1,0 +1,38 @@
+﻿@inject Services.DialogService DialogService
+@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+
+<DialogBase Title="@GetTitle()" SubmitButton="Services.DialogButtonKind.Delete" Kind="Services.DialogKind.Danger" CloseButton="Services.DialogButtonKind.Cancel" OnSubmit="@OnSubmit">
+    <p>
+        Delete @GetItemType(false) '@ItemModel.Title'?
+    </p>
+</DialogBase>
+
+@code { 
+    
+    public NLedger.Launchpad.Models.WorkspaceItemModel ItemModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ItemModel = (NLedger.Launchpad.Models.WorkspaceItemModel)DialogService.CurrentModel;
+        base.OnInitialized();
+    }
+
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.DeleteFileSystemItem(ItemModel.Key), () => $"{GetItemType(true)} {ItemModel.Title} is deleted");
+    }
+
+    private string GetTitle()
+    {
+        return $"Delete {GetItemType(true)}";
+    }
+
+    private string GetItemType(bool isCapitalized)
+    {
+        if (isCapitalized)
+            return ItemModel.Kind == Models.WorkspaceItemKindEnum.File ? "File" : "Folder";
+        else
+            return ItemModel.Kind == Models.WorkspaceItemKindEnum.File ? "file" : "folder";
+    } 
+}

@@ -1,0 +1,68 @@
+﻿@inject Services.ModelService AppModel
+@inject Services.DialogService DialogService
+
+<li class="@ListItemClass">
+    <div class="@NavLinkTitleClass">
+        <a class="@NavLinkClass" href="#" @onclick="SetSelected"><span class="@(Model.Kind.WorkspaceItemIcon())"></span>@Model.Title</a>
+    </div>
+    <div class="nav-item-actions">
+        @if (Model.CanAddFolder)
+        {
+            <a href="#" class="nav-action nav-actions" @onclick="CreateFolder"><span class="oi oi oi-folder"></span></a>
+        }
+        @if (Model.CanAddFile)
+        {
+            <a href="#" class="nav-action nav-actions" @onclick="CreateFile"><span class="oi oi-file"></span></a>
+        }
+        @if (Model.CanEdit)
+        {
+            <a href="#" class="nav-action nav-actions" @onclick="RenameItem"><span class="oi oi-excerpt"></span></a>
+        }
+        @if (Model.CanDelete)
+        {
+            <a href="#" class="nav-action nav-actions" @onclick="DeleteItem"><span class="oi oi-trash"></span></a>
+        }
+    </div>
+</li>
+
+@code {
+
+    [Parameter]
+    public NLedger.Launchpad.Models.WorkspaceItemModel Model { get; set; }
+
+    private string ListItemClass => "nav-item position-relative overflow-hidden" + (AppModel.Model.IsWorkspaceItemSelected(Model) ? " active" : "");
+    private string NavLinkClass => "nav-link nav-item-text-link" + (Model.IsDisabled ? " disabled" : "");
+    private string NavLinkTitleClass => "ml-2 nav-item-text" + (Model.Kind == Models.WorkspaceItemKindEnum.Folder ? " nav-item-text-folder" : "");
+
+    private async void SetSelected()
+    {
+        await AppModel.Model.SelectWorkspaceItem(Model.Key, Model.IsFavorite);
+    }
+
+    private async void CreateFolder()
+    {
+        await DialogService.OpenDialog<Dialogs.DialogCreateFolder>(Model);
+    }
+
+    private async void CreateFile()
+    {
+        await DialogService.OpenDialog<Dialogs.DialogCreateFile>(Model);
+    }
+
+    private async void RenameItem()
+    {
+        if (Model.IsFavorite)
+            await DialogService.OpenDialog<Dialogs.DialogFavoriteItem>(Model.Key);
+        else
+            await DialogService.OpenDialog<Dialogs.DialogRenameItem>(Model);
+    }
+
+    private async void DeleteItem()
+    {
+        if (Model.IsFavorite)
+            await DialogService.OpenDialog<Dialogs.DialogDeleteFavorite>(Model);
+        else
+            await DialogService.OpenDialog<Dialogs.DialogDeleteItem>(Model);
+    }
+
+}

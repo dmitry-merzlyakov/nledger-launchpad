@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+@inject Blazored.LocalStorage.ISyncLocalStorageService localStorage
+@inject NLedger.Launchpad.Services.ModelService ModelService
+
+<header>
+    <NavBar />
+</header>
+
+<AlertPlaceholder />
+
+<main role="main" class="main">
+    @Body
+</main>
+
+<footer class="footer pt-3 mb-3">
+    <FooterPanel />
+</footer>
+
+<DialogPlaceholder />
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ModelService.Initialize(new Repositories.LocalStorageRepository(localStorage));
+    }
+
+}

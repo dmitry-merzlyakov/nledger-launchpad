@@ -1,0 +1,141 @@
+﻿@using Models
+@using Utility
+@using Utility.Validation
+@using Utility.Validation.Rules
+@inject Services.DialogService DialogService
+@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+
+<DialogBase Title="Configuration" IsLarge="true" SubmitButton="Services.DialogButtonKind.Save" CloseButton="Services.DialogButtonKind.Cancel" OnValidate="OnValidate" OnSubmit="@OnSubmit">
+
+    <p class="lead">
+        Virtual Environment Settings.
+    </p>
+    <hr />
+    <div class="form-group">
+
+        <div class="row">
+            <div class="col">
+                ATTY colorization support (IsAtty)
+            </div>
+            <div class="col ml-5">
+                <input class="form-check-input" type="checkbox" name="remember" @bind="EnvironmentalConfigViewModel.IsAtty">
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col">
+                Current Time Zone (TimeZoneId)
+            </div>
+            <div class="col">
+                <AsyncInitPlaceholder IsContentAvailable="() => EnvironmentalConfigViewModel.TimeZones != null">
+                    <select class="form-control" id="selTimeZone" @bind="EnvironmentalConfigViewModel.TimeZoneId">
+                        @foreach (var tz in EnvironmentalConfigViewModel.TimeZones)
+                        {
+    <option value="@(tz.Id)">@($"{tz.DisplayName} ({tz.StandardName})")</option>
+}
+                    </select>
+                </AsyncInitPlaceholder>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col">
+                Output Encoding (OutputEncoding)
+            </div>
+            <div class="col">
+                <AsyncInitPlaceholder IsContentAvailable="() => EnvironmentalConfigViewModel.Encodings != null">
+                    <select class="form-control" id="selEncoding" @bind="EnvironmentalConfigViewModel.OutputEncoding">
+                        @foreach (var cd in EnvironmentalConfigViewModel.Encodings)
+                        {
+    <option value="@(cd.CodePage)">@($"{cd.Name} ({cd.CodePage})")</option>
+}
+                    </select>
+                </AsyncInitPlaceholder>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div class="form-group">
+        <label for="folder-name" class="col-form-label">Environment Variables</label>
+        <button type="button" class="btn btn-outline-secondary float-right" @onclick="@(() => EnvironmentalConfigViewModel.EnvironmentVariables.Add(new EnvironmentVariableModel()))">Add</button>
+
+        @if (EnvironmentalConfigViewModel.EnvironmentVariables.Any())
+        {
+
+<table class="table table-borderless">
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Value</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var v in EnvironmentalConfigViewModel.EnvironmentVariables.GetIndexed())
+        {
+            <tr>
+                <td>
+                    <input type="text" class="@(FormControlClass(v.GetContextKey("name")))" @bind-value="v.Value.Name" placeholder="Variable name">
+                    <ValidationMessageLine Validator="@Validator" ContextKey="@(v.GetContextKey("name"))" />
+                </td>
+                <td>
+                    <input type="text" class="@(FormControlClass(v.GetContextKey("value")))" @bind-value="v.Value.Value" placeholder="Value">
+                    <ValidationMessageLine Validator="@Validator" ContextKey="@(v.GetContextKey("value"))" />
+                </td>
+                <td><a href="#" class="nav-action" @onclick="@(() => EnvironmentalConfigViewModel.EnvironmentVariables.Remove(v.Value))"><span class="oi oi-trash"></span></a></td>
+            </tr>                    
+        }
+    </tbody>
+</table> 
+<ValidationMessageLine Validator="@Validator" ContextKey="envvars" IsGlobal="true" />
+        }
+                else
+                {
+<div class="font-weight-light">None environment variables specified yet. Click Add to add a new one.</div>}
+    </div>
+</DialogBase>
+
+@code { 
+
+
+    public EnvironmentalConfigViewModel EnvironmentalConfigViewModel { get; private set; }
+
+    public static Validator<EnvironmentalConfigViewModel> Validator { get; } = Validators.BuildFor<EnvironmentalConfigViewModel>(
+            root => root.Composite(
+                    vars => vars.Collection(m => m.EnvironmentVariables,
+                            coll => coll.Composite(
+                                    nm => nm.Custom(p => !String.IsNullOrWhiteSpace(p.Name), "Please fill out the field. Name should not be empty.", "name"),
+                                    vl => vl.Custom(p => !String.IsNullOrWhiteSpace(p.Value), "Please fill out the field. Value should not be empty.", "value")
+                            )
+                    ),
+                    dups => dups.Custom(m => m.EnvironmentVariables.IsUnique(v => v.Name, n => String.IsNullOrWhiteSpace(n)), "Duplicated variable names are not alloved", "envvars")
+            )
+    );
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        EnvironmentalConfigViewModel = await Model.Model.GetEnvironmentalConfigViewModel();
+        base.OnInitialized();
+
+        if (!EnvironmentalConfigViewModel.IsInitialized)
+        {
+            await Task.Delay(10);
+            await InvokeAsync(() => EnvironmentalConfigViewModel.EnsureInitialized());
+        }
+    }
+
+    private void OnValidate(Services.DialogValidationResult validationResult)
+    {
+        validationResult.IsValid = Validator.Validate(EnvironmentalConfigViewModel);
+    }
+
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.SaveEnvironmentalConfigViewModel(EnvironmentalConfigViewModel), () => "Environmental Configuration is updated");
+    }
+
+    private string FormControlClass(string contextKey)
+    {
+        return String.IsNullOrEmpty(Validator.ValidationResult.GetMessages(contextKey)) ? "form-control" : "form-control is-invalid";
+    }
+
+}

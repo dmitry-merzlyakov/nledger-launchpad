@@ -1,0 +1,60 @@
+﻿@using BlazorInputFile
+@using Models
+@using Utility
+@using Utility.Validation
+@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+@inject IJSRuntime JS
+
+<DialogBase Title="Restore Workspace" IsLarge="true" SubmitButton="Services.DialogButtonKind.Restore" Kind="Services.DialogKind.Danger" CloseButton="Services.DialogButtonKind.Cancel"  OnValidate="OnValidate" OnSubmit="@OnSubmit">
+    <p>
+        You can restore your workspace from a backup file (previously created by means of Backup option). Click Browse to specify a backup file.
+    </p>
+    <p>
+        IMPORTANT: all you changes made after ceating a backup file will be deleted.
+    </p>
+    <p>
+        <InputFile OnChange="HandleFileSelected" style="display: none;" id="selectedFile" />
+        <input type="button" value="Browse..." onclick="document.getElementById('selectedFile').click();" />
+    </p>
+    <p>
+        @if (RestoreViewModel.HasMessage)
+        {
+            <div class="@GetMesageClass()">@RestoreViewModel.InfoMessage</div>
+        }    
+    </p>
+</DialogBase>
+
+@code {
+
+    public RestoreViewModel RestoreViewModel { get; set; } = new RestoreViewModel();
+
+    private async Task HandleFileSelected(IFileListEntry[] files)
+    {
+        await RestoreViewModel.HandleFileSelected(files);
+    }
+
+    private void OnValidate(Services.DialogValidationResult validationResult)
+    {
+        validationResult.IsValid = RestoreViewModel.Validate();
+    }
+
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.RestoreWorkspace(JS, RestoreViewModel.Data), () => $"Successfully restored, restarting...");
+    }
+
+    private string GetMesageClass()
+    {
+        string kind = String.Empty;
+        if (RestoreViewModel.InfoMessageKind == InfoMessageKind.Info)
+            kind = "bg-info";
+        else if (RestoreViewModel.InfoMessageKind == InfoMessageKind.Progress)
+            kind = "bg-warning";
+        else
+            kind = "bg-danger";
+
+        return $"{kind} text-white pl-1";
+    }
+
+}

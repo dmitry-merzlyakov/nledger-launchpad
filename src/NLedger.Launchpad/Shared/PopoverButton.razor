@@ -1,0 +1,46 @@
+﻿<div class="position-relative d-inline">
+    <a href="#" class="ml-1" @onclick="@(() => IsShown = !IsShown)">
+        <span class="badge badge-pill badge-info font-italic">i</span>
+    </a>
+    @if(IsShown)
+    {
+        <div class="@GetPopoverClass()" style="@GetPopoverStyle()" >
+            <div class="arrow" style="@GetArrowStyle()"></div>
+            <h3 class="popover-header">@Title</h3>
+            <div class="popover-body">@ChildContent</div>
+        </div>
+    }
+</div>
+
+@code {
+
+    public bool IsShown { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public bool IsRight { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private string GetPopoverClass()
+    {
+        var side = IsRight ? "right" : "left";
+        return $"popover fade bs-popover-{side} show";
+    }
+
+    private string GetPopoverStyle()
+    {
+        var left = IsRight ? 22 : -280;
+        return $"position: absolute; top: -{ArrowPos+2}px; left: {left}px; width: 276px;";
+    }
+
+    private string GetArrowStyle()
+    {
+        return $"top: {ArrowPos}px;";
+    }
+
+    private const int ArrowPos = 70;
+}

@@ -1,0 +1,55 @@
+﻿<div class="border-bottom border-top mt-2 bg-light p-2">
+    <a href="#" class="collapsed" @onclick="@(() => IsCollapsed = !IsCollapsed)"><span class="@GetImageClass()"></span></a>
+    @Title
+    @if (OnAddClicked.HasDelegate)
+    {
+    <div class="float-right nav-actions">
+        <a href="#" class="nav-action" @onclick="OnAddClicked"><span class="oi oi-paperclip"></span></a>
+    </div>
+    }
+</div>
+
+@if (!IsCollapsed)
+{
+<ul class="navbar-nav">
+    @foreach(var item in Items)
+    {
+        <WorkspaceItem Model="@item" />
+    }
+</ul>
+}
+
+@code { 
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public bool IsCollapsed
+    {
+        get { return _IsCollapsed; }
+        set
+        {
+            if (value != _IsCollapsed)
+                IsCollapsedChanged.InvokeAsync(value);
+
+            _IsCollapsed = value;
+        }
+    }
+
+    [Parameter]
+    public EventCallback OnAddClicked { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsCollapsedChanged { get; set; }
+
+    [Parameter]
+    public IEnumerable<NLedger.Launchpad.Models.WorkspaceItemModel> Items { get; set; }
+
+    private string GetImageClass()
+    {
+        return IsCollapsed ? "oi oi-caret-bottom" : "oi oi-caret-top";
+    }
+
+    private bool _IsCollapsed;
+}

@@ -1,0 +1,71 @@
+﻿@inject Services.ModelService Model
+@inject Services.DialogService DialogService
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header p-1">
+            <div class="input-group pl-0 pr-0 ml-1">
+                <label for="cmd" class="my-auto">Command:</label>
+                <input type="text" class="form-control ml-2 mr-2" placeholder="Enter a command, e.g. 'bal'" id="cmd" @bind-value="Model.Model.CommandExecutionModel.CommandText">
+                <div class="ml-auto pr-2">
+                    @if (!Model.Model.CommandExecutionModel.IsExecuting)
+                    {
+                        <button type="button" class="btn btn-primary" id="btnRun" @onclick="RunCommand">Run</button>
+                    }
+                    @if (Model.Model.CommandExecutionModel.IsExecuting)
+                    {
+                        <button type="button" class="btn btn-primary disabled" id="btnRunning"><span class="spinner-border spinner-border-sm mr-1"></span>Running...</button>
+                    }
+                    <button type="button" class="btn btn-outline-secondary ml-1" @onclick="@(() => DialogService.OpenDialog<Dialogs.DialogHistory>())">History</button>
+                    <PopoverButton Title="Run Commands">
+                        Here you can run NLedger commands in a way like you do it in a console. The command output will be shown below.
+                        <br /><br />
+                        You should not add an input file name to a command (<mark>-f</mark> option); the currently selected file will be added automatically.
+                    </PopoverButton>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0 terminal">
+            @if (Model.Model.CommandExecutionModel.ResultCode >= 0)
+            {
+                <div class="float-right p-3">
+                    <span title="@GetResultCodeTitle()" class="@GetResultCodeClass()"></span>
+                </div>
+            }
+            @if (!String.IsNullOrEmpty(Model.Model.CommandExecutionModel.OutputText))
+            {
+                <pre class="text-light p-2">@((MarkupString)Model.Model.CommandExecutionModel.OutputText)</pre>
+            }
+            @if (!String.IsNullOrEmpty(Model.Model.CommandExecutionModel.ErrorText))
+            {
+                <pre class="text-light p-2">@((MarkupString)Model.Model.CommandExecutionModel.ErrorText)</pre>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        Model.Model.CommandExecutionModel.OnChanged += async () => await InvokeAsync(() => StateHasChanged());
+        base.OnInitialized();
+    }
+
+    public async Task RunCommand()
+    {
+        await Model.Model.CommandExecutionModel.RunCommand();
+    }
+
+    private string GetResultCodeClass()
+    {
+        return Model.Model.CommandExecutionModel.ResultCode == 0 ? "oi oi-circle-check" : "oi oi-circle-x fg4";
+    }
+
+    private string GetResultCodeTitle()
+    {
+        return Model.Model.CommandExecutionModel.ResultCode > 0 ? $"Error code: {Model.Model.CommandExecutionModel.ResultCode}" : String.Empty;
+    }
+
+
+}

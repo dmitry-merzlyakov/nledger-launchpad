@@ -1,0 +1,46 @@
+﻿@using Models
+@using Utility.Validation
+@inject Services.DialogService DialogService
+@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+
+<DialogBase Title="Create File" SubmitButton="Services.DialogButtonKind.Create" CloseButton="Services.DialogButtonKind.Cancel" OnValidate="OnValidate" OnSubmit="@OnSubmit">
+
+    <p class="lead">
+        Create a new file in folder '@ParentFolderModel.Title'.
+    </p>
+    <div class="form-group">
+        <label for="fname">File name:</label>
+        <input type="text" class="@FormControlClass()" placeholder="Enter file name" id="fname" @bind-value="FileName">
+        <ValidationMessageLine Validator="@FileSystemNameValidator" />
+    </div>
+</DialogBase>
+
+@code {
+
+    public WorkspaceItemModel ParentFolderModel { get; set; }
+
+    public string FileName { get; set; }
+    public static Validator<string> FileSystemNameValidator { get; } = Validators.GetFileSystemNameValidator();
+
+    protected override void OnInitialized()
+    {
+        ParentFolderModel = (WorkspaceItemModel)DialogService.CurrentModel;
+        base.OnInitialized();
+    }
+
+    private void OnValidate(Services.DialogValidationResult validationResult)
+    {
+        validationResult.IsValid = FileSystemNameValidator.Validate(FileName);
+    }
+
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.CreateFile(ParentFolderModel.Key, FileName), () => $"File {FileName} is created");
+    }
+
+    private string FormControlClass()
+    {
+        return FileSystemNameValidator.ValidationResult.IsValid ? "form-control" : "form-control is-invalid";
+    }
+}

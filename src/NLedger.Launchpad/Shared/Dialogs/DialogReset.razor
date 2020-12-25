@@ -1,0 +1,22 @@
+﻿@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+@inject IJSRuntime JS
+
+<DialogBase Title="Reset Workspace" SubmitButton="Services.DialogButtonKind.Reset" Kind="Services.DialogKind.Danger" CloseButton="Services.DialogButtonKind.Cancel" OnSubmit="@OnSubmit">
+    <p>
+        You are about to clear your local workspace: persistently delete all virtual files and folders, favorites, configuration settings and command history.
+        The application will go with a clean environment.
+    </p>
+    <p>
+        Are you sure?
+    </p>
+</DialogBase>
+
+@code { 
+    
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.ResetWorkspace(JS), () => $"Cleaned up, restarting...");
+    }
+
+}

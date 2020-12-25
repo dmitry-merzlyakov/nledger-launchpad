@@ -1,0 +1,56 @@
+﻿@using Models
+@inject Services.ModelService Model
+@inject Services.DialogService DialogService
+
+    <DialogBase Title="History" IsLarge="true" CloseButton="Services.DialogButtonKind.Close">
+
+        <div class="form-group">
+            <input type="text" class="form-control" placeholder="Type here to search in history" @bind="SearchKey" @bind:event="oninput">
+        </div>
+        <div class="form-group auto-scroll-y-350">
+
+            @if (!IsEmpty)
+            {
+
+                <table class="table table-bordered table-hover table-active cursor-pointer">
+                    <tbody>
+                        @foreach (var c in FilteredHistory)
+                        {
+                            <tr>
+                                <td @onclick="@(() => Select(c))">
+                                    @c
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            } else {
+                <div class="font-weight-light">Command History is empty.</div>
+            }
+
+        </div>
+
+    </DialogBase>
+
+@code {
+
+    public IEnumerable<string> History { get; private set; }
+    public bool IsEmpty => History == null || !History.Any();
+    public IEnumerable<string> FilteredHistory => String.IsNullOrWhiteSpace(SearchKey) ? History : History.Where(c => c.Contains(SearchKey, StringComparison.InvariantCultureIgnoreCase));
+
+    public string SearchKey { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        History = await Model.Model.GetHistory();
+        base.OnInitialized();
+    }
+
+    private async Task Select(string command)
+    {
+        await Model.Model.SelectHistoryCommand(command);
+        await DialogService.CloseDialog();
+    }
+
+}

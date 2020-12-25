@@ -1,0 +1,20 @@
+﻿@if (IsContentAvailable())
+{
+    @ChildContent
+}
+else
+{
+    <div class="form-element border p-2 rounded text-muted">
+        <span class="spinner-border spinner-border-sm mr-2"></span>Loading data...
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public Func<bool> IsContentAvailable { get; set; }
+
+}

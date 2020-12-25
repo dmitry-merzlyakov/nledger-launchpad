@@ -1,0 +1,63 @@
+﻿@inject Services.AlertService AlertService
+@implements IDisposable
+
+@if(AlertService.Items.Any())
+{
+    <div class="fixed-top m-3 auto-scroll-y-350">
+
+        @foreach(var item in AlertService.Items)
+        {
+        <div class="@GetAlertClass(item.Kind)">
+            <button type="button" class="close" @onclick="@(() => CloseAlert(item))">&times;</button>
+            @if (item.HasTitle)
+            {
+                <strong>@(item.Title)</strong>
+            }
+            @(item.Message)
+        </div>
+        }
+
+    </div>
+}
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        AlertService.OnItemsChanged += OnItemsChanged;
+    }
+
+    public void Dispose()
+    {
+        AlertService.OnItemsChanged -= OnItemsChanged;
+    }
+
+    private async void CloseAlert(Services.AlertItem item)
+    {
+        await AlertService.CloseAlert(item);
+    }
+
+    private string GetAlertClass(Services.AlertKind kind)
+    {
+        switch(kind)
+        {
+            case Services.AlertKind.Success: return "alert alert-success";
+            case Services.AlertKind.Info: return "alert alert-info";
+            case Services.AlertKind.Warning: return "alert alert-warning";
+            case Services.AlertKind.Danger: return "alert alert-danger";
+            case Services.AlertKind.Primary: return "alert alert-primary";
+            case Services.AlertKind.Secondary: return "alert alert-secondary";
+            case Services.AlertKind.Light: return "alert alert-light";
+            case Services.AlertKind.Dark: return "alert alert-dark";
+            default: throw new InvalidOperationException($"Unknown AlertKind value: {kind}");
+        }
+    }
+
+    public async Task OnItemsChanged()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+}

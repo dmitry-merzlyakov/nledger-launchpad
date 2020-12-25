@@ -1,0 +1,52 @@
+﻿@inject Services.DialogService DialogService
+@implements IDisposable
+
+@if (ComponentType != null)
+{
+    @CreateDynamicComponent();
+}
+
+
+@code {
+
+    public Type ComponentType { get; private set; }
+
+    public async Task Show(Type componentType)
+    {
+        ComponentType = componentType;
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    public async Task Close()
+    {
+        ComponentType = null;
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    protected override void OnInitialized()
+    {
+        DialogService.OnDialogPlaceholderStateChange += OnDialogPlaceholderStateChange;
+    }
+
+    public void Dispose()
+    {
+        DialogService.OnDialogPlaceholderStateChange -= OnDialogPlaceholderStateChange;
+    }
+
+    public async Task OnDialogPlaceholderStateChange(Services.DialogPlaceholderStateChange stateChange)
+    {
+        if (stateChange.Command == Services.DialogPlaceholderCommandEnum.Show)
+            await Show(stateChange.CommponentType);
+        else if (stateChange.Command == Services.DialogPlaceholderCommandEnum.Close)
+            await Close();
+    }
+
+}
+
+@functions {
+    RenderFragment CreateDynamicComponent() => builder =>
+        {
+            builder.OpenComponent(0, ComponentType);
+            builder.CloseComponent();
+        };
+}

@@ -1,0 +1,57 @@
+﻿@page "/"
+@inject Services.ModelService Model
+
+<div class="container-fluid h-100 pt-3">
+    <div class="row h-100 position-relative">
+        @if(Model.Model.IsWorkspaceVisible)
+        {
+            <div class="h-100 pr-0 ml-3 mr-2" style="@WorkspaceCardStyle()">
+                <WorkspaceCard />
+            </div>
+
+            <VSplitter PositionChanged="PositionChanged" PositionFinalized="PositionFinalized"></VSplitter>
+        }
+        <div class="col h-100" style="margin-left:-6px;">
+            <TextEditorCard />
+        </div>
+    </div>
+</div>
+
+@code { 
+
+    public const int MinLeftSideWidth = 200;
+    public const int MaxLeftSideWidth = 640;
+
+    public int LeftSideWidth { get; set; } = 270;
+
+    protected override void OnInitialized()
+    {
+        LeftSideWidth = Model.Model.WorkspaceCardWidth;
+        base.OnInitialized();
+        Model.Model.IsWorkspaceVisibleChanged += async () => await InvokeAsync(StateHasChanged);
+    }
+
+    private void PositionChanged(double delta)
+    {
+        var width = LeftSideWidth + (int)delta;
+
+        if (width < MinLeftSideWidth)
+            width = MinLeftSideWidth;
+
+        if (width > MaxLeftSideWidth)
+            width = MaxLeftSideWidth;
+
+        LeftSideWidth = width;
+    }
+
+    private async Task PositionFinalized(double delta)
+    {
+        await Model.Model.SetWorkspaceCardWidth(LeftSideWidth);
+    }
+
+    private string WorkspaceCardStyle()
+    {
+        return $"width: {LeftSideWidth}px;";
+    }
+
+}

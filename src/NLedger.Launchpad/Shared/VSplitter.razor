@@ -1,0 +1,55 @@
+﻿@inject IJSRuntime JSRuntime
+
+<div id="@SplitterID" class="@GetClass()"
+     @onpointerdown="PointerDown" @onpointermove="PointerMove" @onpointerup="PointerUp">
+
+</div>
+
+@code {
+
+    [Parameter]
+    public string SplitterID { get; set; } = "vsplitter";
+
+    [Parameter]
+    public EventCallback<double> PositionChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<double> PositionFinalized { get; set; }
+
+    double InitialPosition = 0;
+    double Position = 0;
+    bool IsDown = false;
+
+    private async Task PointerDown(PointerEventArgs e)
+    {
+        await JSRuntime.InvokeVoidAsync("setPCapture", SplitterID, e.PointerId);
+        IsDown = true;
+        InitialPosition = Position = e.ClientX;
+    }
+
+    private async Task PointerMove(PointerEventArgs e)
+    {
+        if (IsDown)
+        {
+            Position = e.ClientX;
+            await PositionChanged.InvokeAsync(Position - InitialPosition);
+            InitialPosition = Position;
+        }
+    }
+
+    private async Task PointerUp(PointerEventArgs e)
+    {
+        if (IsDown)
+        {
+            await JSRuntime.InvokeVoidAsync("releasePCapture", SplitterID, e.PointerId);
+            IsDown = false;
+            await PositionFinalized.InvokeAsync(Position);
+        }
+    }
+
+    private string GetClass()
+    {
+        return "v-splitter" + (IsDown ? " v-splitter-dragging" : "");
+    }
+
+}

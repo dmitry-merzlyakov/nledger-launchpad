@@ -1,0 +1,81 @@
+﻿@inject Services.ModelService Model
+@inject IJSRuntime JSRuntime
+@using Microsoft.Extensions.Logging
+@inject ILogger<TextEditorCard> logger
+@inject Services.AlertService AlertService
+
+<div class="card h-100">
+    <div class="card-header p-1">
+        <i class="far fa-file-audio ml-1"></i>
+        <label class="mt-1 ml-2">@(TextEditorModel.DataSourceTitle)</label>
+        <div class="float-right pr-1">
+            <button type="button" class="btn btn-outline-secondary" @onclick="Save">Save</button>
+            <PopoverButton Title="Text Editor">
+                This is an editor where you can modify input NLedger files selected in Workspace.
+                <br /><br />
+                Though your changes are preserved automatically, it is recommended clicking Save after essential modifications.
+            </PopoverButton>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <textarea id="textAreaDataSource" rows="15"></textarea>
+    </div>
+</div>
+
+@code {
+
+
+    public Models.TextEditorModel TextEditorModel { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        Model.Model.SelectedChanged += OnSelectedChanged;
+        Model.Model.GetTextEditorText += GetText;
+        TextEditorModel = await Model.Model.GetTextEditorModel();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            logger.LogDebug(Logging.AppLogEvents.OnAfterRenderAsync, "CodeMirror initialization");
+            await JSRuntime.InvokeVoidAsync("initCodeMirror");
+            SetText(TextEditorModel.Text);
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task Save()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.SaveTextEditorContent(), () => "Text is saved");
+    }
+
+    private ValueTask<string> GetText()
+    {
+        logger.LogDebug("Getting text");
+        return JSRuntime.InvokeAsync<string>("getCodeMirrorValue");
+    }
+
+    private void SetText(string text)
+    {
+        logger.LogDebug("Setting text");
+        JSRuntime.InvokeAsync<string>("setCodeMirrorValue", text);
+    }
+
+    public async Task OnSelectedChanged()
+    {
+        logger.LogDebug("Updating editing text since a currently selected source item has been changed.");
+
+        TextEditorModel = await Model.Model.GetTextEditorModel();
+
+        await InvokeAsync(() =>
+        {
+            SetText(TextEditorModel.Text);
+            StateHasChanged();
+        });
+    }
+
+
+}

@@ -1,0 +1,25 @@
+﻿@using Utility.Validation
+
+@if (!IsValid)
+{
+    <div class="@GetClass()">@(Validator?.ValidationResult.GetMessages(ContextKey))</div>
+}
+
+@code {
+
+    [Parameter]
+    public IValidator Validator { get; set; }
+
+    [Parameter]
+    public string ContextKey { get; set; }
+
+    [Parameter]
+    public bool IsGlobal { get; set; }
+
+    public bool IsValid => Validator?.ValidationResult.IsValid ?? true && String.IsNullOrEmpty(Validator?.ValidationResult.GetMessages(ContextKey));
+
+    private string GetClass()
+    {
+        return IsGlobal ? "bg-danger text-white" : "invalid-feedback";
+    }
+}

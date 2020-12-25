@@ -1,0 +1,22 @@
+﻿@using Models
+@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+@inject IJSRuntime JS
+
+<DialogBase Title="Backup Workspace" SubmitButton="Services.DialogButtonKind.Create" CloseButton="Services.DialogButtonKind.Cancel" OnSubmit="@OnSubmit">
+
+    <p>
+        Create and download a zip archive of your local storage including files, favorites and configuration settings.
+        Further, you can use this zip file to restore your environment on any machine.
+    </p>
+</DialogBase>
+
+@code {
+
+    private async void OnSubmit()
+    {
+        var fileName = $"NLedger.Launchpad.Backup.{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.zip";
+        await AlertService.TraceResult(async () => await Model.Model.BackupWorkspace(JS, fileName), () => $"Backup {fileName} is created");
+    }
+
+}

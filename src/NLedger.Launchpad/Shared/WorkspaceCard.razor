@@ -1,0 +1,89 @@
+﻿@using Models
+@inject Services.ModelService Model
+@inject Services.DialogService DialogService
+
+<div class="card h-100">
+    <div class="card-header p-1">
+        <span class="oi oi-credit-card ml-2"></span>
+        <label class="mt-1 ml-2">Workspace</label>
+        <div class="float-right mr-1 mt-1">
+            <PopoverButton Title="Workspace" IsRight="true">
+                Workspace is a virtual environment where NLedger is running; it includes input files, variables and general settings. You can: 
+                <ul>
+                    <li>Edit input stream (/dev/stdin);</li>
+                    <li>Add, edit and remove files in the virtual file system;</li>
+                    <li>Change settings and environment variables;</li>
+                    <li>Backup, restore and reset the workspace.</li>
+                </ul>
+                All the data is kept in the local browser storage.
+            </PopoverButton>
+        </div>
+    </div>
+    <div class="card-body pl-2 pr-2 mb-5" style="overflow-y: scroll; overflow-x: hidden;">
+
+        <ul class="navbar-nav">
+            <WorkspaceItem Model="@(Model.Model.InputStreamItem)" />
+        </ul>
+
+        <WorkspaceSection Title="File System" Items="@FileSystemItems" IsCollapsed="@Model.Model.IsFileSystemCollapsed" IsCollapsedChanged="@IsFileSystemCollapsedChanged" />
+
+        <WorkspaceSection Title="Favorites" Items="@FavoriteItems" IsCollapsed="@Model.Model.IsFavoritesCollapsed" IsCollapsedChanged="@IsFavoritesCollapsedChanged" OnAddClicked="@(() => DialogService.OpenDialog<Dialogs.DialogFavoriteItem>())" />
+
+    </div>
+    <div class="mb-1 ml-1" style="position: absolute;bottom: 0;">
+        <button type="button" class="btn btn-outline-secondary" @onclick="@(() => DialogService.OpenDialog<Dialogs.DialogConfig>())">Settings</button>
+        <div class="float-right ml-1">
+            <DropdownButton Title="Manage" Items="ManageItems" />
+        </div>
+    </div>
+
+</div>
+
+@code {
+
+    IEnumerable<NLedger.Launchpad.Models.WorkspaceItemModel> FileSystemItems;
+    IEnumerable<NLedger.Launchpad.Models.WorkspaceItemModel> FavoriteItems;
+    IEnumerable<DropdownItem> ManageItems;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Model.Model.SelectedChanged += OnSelectedChanged;
+
+        ManageItems = new DropdownItem[]
+        {
+            new DropdownItem("Backup", "oi oi-share-boxed", async () => await DialogService.OpenDialog<Dialogs.DialogBackup>()),
+            new DropdownItem("Restore", "oi oi-reload", async () => await DialogService.OpenDialog<Dialogs.DialogRestore>()),
+            DropdownItem.Divider,
+            new DropdownItem("Reset", "oi oi-tablet", async () => await DialogService.OpenDialog<Dialogs.DialogReset>()),
+        };
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        FileSystemItems = await Model.Model.GetFileSystemItems();
+        FavoriteItems = await Model.Model.GetFavoriteItems();
+    }
+
+    public async Task OnSelectedChanged()
+    {
+        FileSystemItems = await Model.Model.GetFileSystemItems();
+        FavoriteItems = await Model.Model.GetFavoriteItems();
+
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private async Task IsFileSystemCollapsedChanged(bool isCollapsed)
+    {
+        await Model.Model.SetIsFileSystemCollapsed(isCollapsed);
+    }
+
+    private async Task IsFavoritesCollapsedChanged(bool isCollapsed)
+    {
+        await Model.Model.SetIsFavoritesCollapsed(isCollapsed);
+    }
+
+}

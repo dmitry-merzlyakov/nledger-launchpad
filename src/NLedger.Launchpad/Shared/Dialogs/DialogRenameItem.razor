@@ -1,0 +1,68 @@
+﻿@using Models
+@using Utility.Validation
+@using Utility.Validation.Rules
+@inject Services.DialogService DialogService
+@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+
+<DialogBase Title="@GetTitle()" SubmitButton="Services.DialogButtonKind.Rename" CloseButton="Services.DialogButtonKind.Cancel" OnValidate="OnValidate" OnSubmit="@OnSubmit">
+
+    <p class="lead">
+        Rename @GetItemType(false) '@ItemModel.Title'.
+    </p>
+    <div class="form-group">
+        <label for="fname">@(GetItemType(true)) name:</label>
+        <input type="text" class="@FormControlClass()" placeholder="Enter @GetItemType(false) name" id="fname" @bind-value="Name">
+        <ValidationMessageLine Validator="@FileSystemNameValidator" />
+    </div>
+</DialogBase>
+
+@code {
+
+    public WorkspaceItemModel ItemModel { get; set; }
+
+    public string Name { get; set; }
+    public string OrigName { get; set; }
+
+    public Validator<string> FileSystemNameValidator { get; private set; }
+
+    protected override async void OnInitialized()
+    {
+        ItemModel = (WorkspaceItemModel)DialogService.CurrentModel;
+        base.OnInitialized();
+        OrigName = Name = await Model.Model.GetFileSystemItemName(ItemModel.Key);
+
+        FileSystemNameValidator = new Validator<string>(new CompositeValidationRule<string>(new ValidationRule<string>[]
+        {
+            Validators.GetFileSystemNameValidationRule(),
+            new CustomValidationRule<string>(s => s != OrigName, "The name should be changed.")
+        }));
+    }
+
+    private void OnValidate(Services.DialogValidationResult validationResult)
+    {
+        validationResult.IsValid = FileSystemNameValidator.Validate(Name);
+    }
+
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.RenameFileSystemItem(ItemModel.Key, Name), () => $"{GetItemType(true)} {Name} is renamed");
+    }
+
+    private string FormControlClass()
+    {
+        return FileSystemNameValidator.ValidationResult.IsValid ? "form-control" : "form-control is-invalid";
+    }
+
+    private string GetTitle()
+    {
+        return $"Rename {GetItemType(true)}";
+    }
+
+    private string GetItemType(bool isCapitalized)
+    {
+        if (isCapitalized)
+            return ItemModel.Kind == Models.WorkspaceItemKindEnum.File ? "File" : "Folder";
+        else
+            return ItemModel.Kind == Models.WorkspaceItemKindEnum.File ? "file" : "folder";
+    } }

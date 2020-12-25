@@ -1,0 +1,27 @@
+﻿@using Models
+@inject Services.DialogService DialogService
+@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+
+<DialogBase Title="Delete Favorite" SubmitButton="Services.DialogButtonKind.Delete" Kind="Services.DialogKind.Danger" CloseButton="Services.DialogButtonKind.Cancel" OnSubmit="@OnSubmit">
+    <p>
+        Delete favorite '@ItemModel.Title'?
+    </p>
+</DialogBase>
+
+@code { 
+
+    public WorkspaceItemModel ItemModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ItemModel = (WorkspaceItemModel)DialogService.CurrentModel;
+        base.OnInitialized();
+    }
+
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.DeleteFavoriteItem(ItemModel.Key), () => $"Favorite {ItemModel.Title} is deleted");
+    }
+
+}

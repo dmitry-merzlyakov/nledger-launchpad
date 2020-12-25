@@ -1,0 +1,106 @@
+﻿@inject Services.DialogService DialogService
+
+<div class="modal fade show" aria-modal="true" style="display:block" role="dialog" @onclick="@ClosePopup">
+    <div class="@ModalDialogClasses()" @onclick:stopPropagation="true">
+        <div class="modal-content">
+            <div class="@GetModalHeaderClass()">
+                <h4 class="modal-title">@Title</h4>
+                <button type="button" class="close" @onclick="ClosePopup">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @ChildContent
+            </div>
+            <div class="modal-footer">
+                @if (SubmitButton != Services.DialogButtonKind.None)
+                {
+                    <button type="button" class="@GetSubmitButtonClass()" @onclick="@SubmitPopup">@GetButtonCaption(SubmitButton)</button>
+                }
+                @if (CloseButton != Services.DialogButtonKind.None)
+                {
+                    <button type="button" class="btn btn-secondary" @onclick="@ClosePopup">@GetButtonCaption(CloseButton)</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop fade show"></div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public bool IsLarge { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public Services.DialogKind Kind { get; set; } = Services.DialogKind.Primary;
+
+    [Parameter]
+    public Services.DialogButtonKind SubmitButton { get; set; } = Services.DialogButtonKind.None;
+
+    [Parameter]
+    public Services.DialogButtonKind CloseButton { get; set; } = Services.DialogButtonKind.Close;
+
+    [Parameter]
+    public EventCallback<Services.DialogValidationResult> OnValidate { get; set; }
+
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    public bool IsSubmitEnabled { get; set; } = true;
+
+
+    public void SetSubmitState(bool isEnabled)
+    {
+        IsSubmitEnabled = isEnabled;
+        StateHasChanged();
+    }
+
+    async Task SubmitPopup()
+    {
+        if (!IsSubmitEnabled)
+            return;
+
+        var validationResult = new Services.DialogValidationResult();
+        await OnValidate.InvokeAsync(validationResult);
+        if (!validationResult.IsValid)
+            return;
+
+        await ClosePopup();
+        await OnSubmit.InvokeAsync(null);
+    }
+
+    async Task ClosePopup()
+    {
+        await DialogService.CloseDialog();
+    }
+
+    private string ModalDialogClasses()
+    {
+        var sb = new System.Text.StringBuilder("modal-dialog");
+        if (IsLarge) sb.Append(" modal-lg");
+        return sb.ToString();
+    }
+
+    private string GetButtonCaption(Services.DialogButtonKind buttonKind)
+    {
+        return buttonKind.ToString();
+    }
+
+    private string GetModalHeaderClass()
+    {
+        return $"modal-header bg-{Kind.ToString().ToLower()} text-light";
+    }
+
+    private string GetSubmitButtonClass()
+    {
+        var submitState = IsSubmitEnabled ? String.Empty : "disabled";
+        return $"btn btn-{Kind.ToString().ToLower()} {submitState}";
+    }
+
+}

@@ -1,0 +1,50 @@
+﻿@using Models
+<div class="dropdown">
+    <button type="button" class="btn btn-outline-secondary dropdown-toggle" @onclick="@(() => IsExpanded = !IsExpanded)">@Title</button>
+    @if (IsExpanded)
+    {
+        <div style="position: fixed; width: 100%; height: 100%; top: 0%; left: 0%; z-index: 99998;" @onclick="Collapse"></div>
+        <div class="dropdown-menu show" style="position: absolute; transform: translate3d(0px, 38px, 0px); top: 0px; left: 0px; will-change: transform; z-index: 99999;">
+            @foreach (var item in Items)
+            {
+                @if (item.IsDivider)
+                {
+                    <div class="dropdown-divider"></div>
+                }
+                else
+                {
+                    <a class="dropdown-item" href="#" @onclick="@(() => Execute(item))">
+                        @if(item.HasImage)
+                        {
+                            <span class="@item.ImageClass"></span>
+                        }
+                        @item.Title                        
+                    </a>
+                }
+            }
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public IEnumerable<DropdownItem> Items { get; set; }
+
+    public bool IsExpanded { get; set; } = false;
+
+    private void Collapse()
+    {
+        IsExpanded = false;
+    }
+
+    private async Task Execute(DropdownItem item)
+    {
+        Collapse();
+        await item.Handler();
+    }
+
+}

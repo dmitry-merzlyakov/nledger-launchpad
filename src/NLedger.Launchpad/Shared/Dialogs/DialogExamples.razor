@@ -1,0 +1,69 @@
+﻿@using Models
+@inject Services.ModelService Model
+@inject Services.DialogService DialogService
+@inject Services.AlertService AlertService
+@inject HttpClient Http
+
+    <DialogBase @ref="DialogBase" Title="Examples" IsLarge="true" SubmitButton="Services.DialogButtonKind.Download" CloseButton="Services.DialogButtonKind.Close" OnSubmit="@OnSubmit">
+
+        <p>
+            Download one or more examples of using <mark>ledger</mark> tool. Selected items will be available as favorites;
+            data files will be placed in <mark>samples</mark> local virtual folder.
+        </p>
+
+
+        <div class="form-group auto-scroll-y-350">
+
+            @if(Samples != null)
+            {
+                <table class="table table-hover">
+                    <tbody>
+                    @foreach (var sample in Samples)
+                    {
+                        <tr>
+                            <td class="checkbox">
+                                <input type="checkbox" @bind="sample.Selected">
+                            </td>
+                            <td>
+                                @sample.Title
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            } 
+            else
+            {
+                <div class="font-weight-light"><span class="spinner-border spinner-border-sm mr-2"></span>Loading data...</div>
+            }
+
+        </div>
+
+
+
+    </DialogBase>
+
+@code {
+
+    public SampleViewModel[] Samples { get; set; }
+    public bool HasSelected => Samples.Any(s => s.Selected);
+
+    public DialogBase DialogBase;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Samples = (await Http.GetFromJsonAsync<SampleItem[]>("sample-data/index.json")).Select(s => new SampleViewModel(s, SelectedChanged)).ToArray();
+        SelectedChanged();
+    }
+
+    private void SelectedChanged()
+    {
+        DialogBase.SetSubmitState(HasSelected);
+    }
+
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.ApplySamples(Http, Samples.Select(s => s.SampleItem).ToArray()), () => "Examples are added to favorites");
+    }
+
+}

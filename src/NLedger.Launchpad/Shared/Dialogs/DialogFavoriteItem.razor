@@ -1,0 +1,76 @@
+﻿@using Models
+@using Utility.Validation
+@using Utility.Validation.Rules
+@inject Services.DialogService DialogService
+@inject Services.ModelService Model
+@inject Services.AlertService AlertService
+
+<DialogBase Title="@DialogTitle" IsLarge="true" SubmitButton="Services.DialogButtonKind.Save" CloseButton="Services.DialogButtonKind.Cancel" OnValidate="OnValidate" OnSubmit="@OnSubmit">
+
+    <p class="lead">
+        Save your favorite command to run it again by one click.
+    </p>
+    <div class="form-group">
+
+        <div class="form-group">
+            <label for="titleText">Title:</label>
+            <input type="text" class='@FormControlClass("title")' placeholder="Enter favorite title" id="titleText" @bind-value="@FavoriteItemViewModel.Title">
+            <ValidationMessageLine Validator="@Validator" ContextKey="title" />
+        </div>
+
+        <div class="form-group">
+            <label for="selectedFile">Current file (or Input Stream):</label>
+            <select class="form-control" id="selectedFile" name="selectedFile" @bind="@FavoriteItemViewModel.FileKey">
+                @foreach (var fileItem in FavoriteItemViewModel.FileSystemItems) {
+                    <option value="@(fileItem.Key)">@(fileItem.Title)</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="commandText">Command:</label>
+            <input type="text" class='@FormControlClass("command")' placeholder="Enter command text" id="commandText" @bind-value="@FavoriteItemViewModel.Command">
+            <ValidationMessageLine Validator="@Validator" ContextKey="command" />
+        </div>
+
+    </div>
+</DialogBase>
+
+@code { 
+
+    public Guid CurrentKey { get; private set; }
+    public FavoriteItemViewModel FavoriteItemViewModel { get; private set; }
+
+    public static Validator<FavoriteItemViewModel> Validator { get; } = Validators.BuildFor<FavoriteItemViewModel>(
+        root => root.Composite(
+            tl => tl.Custom(m => !String.IsNullOrWhiteSpace(m.Title), "Please fill out the field. It should not be empty.", "title"),
+            cm => cm.Custom(m => !String.IsNullOrWhiteSpace(m.Command), "Please fill out the field. It should not be empty.", "command")
+        )
+    );
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentKey = (Guid?)DialogService.CurrentModel ?? default(Guid);
+        FavoriteItemViewModel = await Model.Model.GetFavoriteItemViewModel(CurrentKey);
+        base.OnInitialized();
+    }
+
+    private void OnValidate(Services.DialogValidationResult validationResult)
+    {
+        validationResult.IsValid = Validator.Validate(FavoriteItemViewModel);
+    }
+
+    private async void OnSubmit()
+    {
+        await AlertService.TraceResult(async () => await Model.Model.SaveFavoriteItemViewModel(FavoriteItemViewModel), () => SuccessText);
+    }
+
+    private string FormControlClass(string contextKey)
+    {
+        return String.IsNullOrEmpty(Validator.ValidationResult.GetMessages(contextKey)) ? "form-control" : "form-control is-invalid";
+    }
+
+    private string DialogTitle => CurrentKey == default(Guid) ? "Create Favorite" : "Edit Favorite";
+    private string SuccessText => CurrentKey == default(Guid) ? "A new favorite is created" : "Favorite is updated";
+
+}
