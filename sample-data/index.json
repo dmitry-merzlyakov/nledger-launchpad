@@ -1,0 +1,18 @@
+﻿[
+    {
+        "SampleID":  "ef52405c-9dc2-49b2-b65b-0e90d401fdf6",
+        "Title":  "Getting register (drewr3.dat)",
+        "Command":  "register",
+        "Files":  [
+                      "drewr3.dat"
+                  ]
+    },
+    {
+        "SampleID":  "ef52405c-9dc1-49b2-b65b-0e90d401fdf6",
+        "Title":  "Getting balance (drewr3.dat)",
+        "Command":  "balance",
+        "Files":  [
+                      "drewr3.dat"
+                  ]
+    }
+]
