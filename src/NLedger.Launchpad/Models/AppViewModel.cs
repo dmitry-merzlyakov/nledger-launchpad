@@ -32,7 +32,8 @@ namespace NLedger.Launchpad.Models
                 FileSystemRepository,
                 getSourceKey: () => Selected,
                 addCommandToHistory: AddCommandToHistory,
-                getEnvironmentalConfig: GetEnvironmentalConfig
+                getEnvironmentalConfig: GetEnvironmentalConfig,
+                saveTextEditorContent: SaveTextEditorContent
             );
         }
 

@@ -16,13 +16,14 @@ namespace NLedger.Launchpad.Models
 {
     public class CommandExecutionModel
     {
-        public CommandExecutionModel(IFileSystemRepository fileSystemRepository, Func<Guid> getSourceKey, Func<string, Task> addCommandToHistory, Func<Task<EnvironmentalConfig>> getEnvironmentalConfig)
+        public CommandExecutionModel(IFileSystemRepository fileSystemRepository, Func<Guid> getSourceKey, Func<string, Task> addCommandToHistory, Func<Task<EnvironmentalConfig>> getEnvironmentalConfig, Func<Task> saveTextEditorContent)
         {
             FileSystemRepository = fileSystemRepository ?? throw new ArgumentNullException(nameof(fileSystemRepository));
             FileSystemProviderConnector = new FileSystemProviderConnector(fileSystemRepository);
             GetSourceKey = getSourceKey ?? throw new ArgumentNullException(nameof(getSourceKey));
             AddCommandToHistory = addCommandToHistory ?? throw new ArgumentNullException(nameof(addCommandToHistory));
             GetEnvironmentalConfig = getEnvironmentalConfig ?? throw new ArgumentNullException(nameof(getEnvironmentalConfig));
+            SaveTextEditorContent = saveTextEditorContent ?? throw new ArgumentNullException(nameof(saveTextEditorContent));
         }
 
         public string CommandText { get; set; }
@@ -37,6 +38,7 @@ namespace NLedger.Launchpad.Models
         public Func<Guid> GetSourceKey { get; }
         public Func<string, Task> AddCommandToHistory { get; }
         public Func<Task<EnvironmentalConfig>> GetEnvironmentalConfig { get; }
+        public Func<Task> SaveTextEditorContent { get; }
 
         public async Task RunCommand()
         {
@@ -68,6 +70,7 @@ namespace NLedger.Launchpad.Models
                 return;
             }
 
+            await SaveTextEditorContent();
             await AddCommandToHistory(command);
 
             var sourceKey = GetSourceKey();
