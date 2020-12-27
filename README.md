@@ -98,7 +98,7 @@ The detail information including change logs, known limitations and road map is 
 - .Net Ledger 0.8.1 (Ledger 3.2.1-20200518)
 
 ### Build Application
-Pre-build binaries are available in [Github Pages branch](https://github.com/dmitry-merzlyakov/nledger-launchpad/tree/gh-pages). You can get all biinaries and host the application on your server.
+Pre-build binaries are available in [Github Pages branch](https://github.com/dmitry-merzlyakov/nledger-launchpad/tree/gh-pages). You can get all binaries and host the application on your server.
 
 If you want to build the application from source code:
 - Download [.Net Ledger Launchpad](https://github.com/dmitry-merzlyakov/nledger-launchpad) repository
