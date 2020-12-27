@@ -1,5 +1,6 @@
 ﻿@inject Services.ModelService Model
 @inject Services.DialogService DialogService
+@inject Services.AlertService AlertService
 
 <div class="container-fluid">
     <div class="card">
@@ -54,7 +55,10 @@
 
     public async Task RunCommand()
     {
-        await Model.Model.CommandExecutionModel.RunCommand();
+        if (String.IsNullOrWhiteSpace(Model.Model.CommandExecutionModel.CommandText))
+            await AlertService.AddAlert(Services.AlertKind.Warning, "Enter a command to the command box");
+        else
+            await Model.Model.CommandExecutionModel.RunCommand();
     }
 
     private string GetResultCodeClass()
