@@ -1,10 +1,12 @@
-﻿<DialogBase Title="About .Net Ledger Launchpad" IsLarge="true" Kind="Services.DialogKind.Info" >
+﻿<DialogBase Title="About .Net Ledger Launchpad" IsLarge="true" Kind="Services.DialogKind.Info">
     <p>
-        <a href="https://github.com/dmitry-merzlyakov/nledger">.Net Ledger</a> is a .Net port of <a href="http://ledger-cli.org/">Ledger</a>, powerful command line accounting system.
+        <mark>.Net Ledger Web Browser Application</mark> lets you interactively process your <a href="http://ledger-cli.org/">Ledger</a> files just in your browser.
+        It supports all Ledger capabilities, so you can use any Ledger data files and commands.
     </p>
     <p>
-        Launchpad is a web application that runs .Net Ledger just in your browser by means of <a href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor">Blazor</a>/WebAssembly technology.
-        It supports all Ledger capabilities, so you can use any Ledger data files and commands.
+        It uses <a href="https://github.com/dmitry-merzlyakov/nledger">.Net Ledger</a> library for data processing and
+        <a href="https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor">Blazor</a>/WebAssembly technology to run .Net code inside a browser.
+        More technical information you can hind on <a href="https://github.com/dmitry-merzlyakov/nledger-launchpad">.Net Ledger Launchpad</a> page.
     </p>
     <p>
         Read <a href="https://www.ledger-cli.org/docs.html">Ledger documentation</a> if you want to know more about <a href="http://plaintextaccounting.org/">plain text accounting</a>.
@@ -12,11 +14,16 @@
     </p>
     <h6>Disclaimer:</h6>
     <ul>
-        <li>.Net Ledger Launchpad does not use cookies and never saves user data on the server. </li>
-        <li>Workspace data is kept in the local browser storage. Use <mark>Workspace - Manage - Reset</mark> command to clean up your environment.</li>
-        <li>By using the software, you accept the terms of <a href="https://github.com/dmitry-merzlyakov/nledger/blob/master/LICENSE">.Net Ledger EULA</a>.</li>
+        <li>.Net Ledger Launchpad does not use cookies and never uploads user data to the server. </li>
+        <li>User data is kept in the local browser storage. Use <mark>Workspace - Manage - Reset</mark> command to clean up your environment.</li>
+        <li>By using the software, you accept the terms of <a href="https://github.com/dmitry-merzlyakov/nledger/blob/master/LICENSE">.Net Ledger License</a>.</li>
     </ul>
+    <h6>Bug Reporting</h6>
     <p>
-        &#169; 2015-2020 <a href="mailto:dmitry.merzlyakov@gmail.com">Dmitry Merzlyakov</a>
+        You can leave your suggestions or report issues on the <a href="https://github.com/dmitry-merzlyakov/nledger-launchpad/issues">Issues</a> tab.
+    </p>
+    <hr />
+    <p>
+        &#169; 2020 <a href="mailto:dmitry.merzlyakov@gmail.com">Dmitry Merzlyakov</a>
     </p>
 </DialogBase>
