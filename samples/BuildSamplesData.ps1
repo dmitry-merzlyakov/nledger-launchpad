@@ -41,7 +41,7 @@ foreach($indexItem in $indexData) {
         SampleID = $sampleID
         Title = $title
         Command = $command
-        Files = $fileList
+        Files = $itemFiles
     }
 }
 

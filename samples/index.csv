@@ -1,3 +1,7 @@
 ﻿SampleID,Title,Command,Files
+{21F1978E-E2BD-4EFC-8F1A-E6CECB773FBB},[LB 1.1] Fat-free Accounting - balance,bal,Val-310.dat
+{3CCDBB2F-D5F5-45EF-9E7A-46F0CE856A50},[LB 1.1] Fat-free Accounting - balance,balance,ledger.dat
+{4B89D8DD-E220-4496-A8AA-E227914A32C9},[LB 1.1] Fat-free Accounting - registers,register checking,ledger.dat
+{685B496F-5614-47AF-8E53-89BBFBE06290},[LB 1.1] Fat-free Accounting - registers,register Bell,ledger.dat
 {EF52405C-9DC1-49B2-B65B-0E90D401FDF6},Getting balance (drewr3.dat),balance,drewr3.dat
 {EF52405C-9DC2-49B2-B65B-0E90D401FDF6},Getting register (drewr3.dat),register,drewr3.dat
